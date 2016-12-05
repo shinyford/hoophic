@@ -1,0 +1,155 @@
+<html>
+  <head>
+    <title><%= @series.title %></title>
+
+    <link	rel="shortcut	icon"	href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>" type="image/vnd.microsoft.icon" />
+    <link	rel="icon" href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>"	type="image/vnd.microsoft.icon"	/>
+
+    <script type="text/javascript" src="/<%= RESOURCEBASE %>js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js"></script>
+
+    <link rel="stylesheet" href="/<%= RESOURCEBASE %>style/common.css" type="text/css" />
+    <link rel="stylesheet" href="/<%= RESOURCEBASE %>style/mhoophic.css" type="text/css" />
+
+  	<!--[if IE 6]>
+	  <style type="text/css">
+		html { overflow-y: hidden; }
+		body { overflow-y: auto; }
+		#bg { position:absolute; z-index:-1; }
+		#all { position:static; }
+		</style>
+		<![endif]-->
+
+		<% if @highlight %>
+		<meta property="og:title" content="<%= @series.title %>: <%= esc(@highlight.heading) %>"/>
+		<meta property="og:description" content="<%= esc(@highlight.description) %>"/>
+		<meta property="og:image" content="http://hoophic.gomes.com.es/<%= @series.name %>/thumb/<%= @highlight.acronym %>.<%= @series.imfmt %>"/>
+		<% end %>
+
+    <script type="text/javascript">
+
+		$(window).load(function() {
+
+			$('.comment_btn').click(function() {
+				var index = parseInt(this.id.substring(3));
+				$('#comment'+index).fadeIn(500);
+			});
+
+			<% if @highlight %>
+			window.location.hash = "story<%= @highlight.id %>"
+			<% end %>
+		});
+
+		</script>
+
+  </head>
+  <body>
+ 		<div id="all">
+
+			<div id="header">
+				<img id="logo" src="/images/<%= @series.name %>/sysimage/mlogo.png"/>
+				<div class="title" id="heading"><%= @series.title.upcase %></div>
+				<br/>
+        <img alt="" id="bgimg" src="/images/<%= @series.name %>/<%= @nextup.acronym %>/mbg.<%= @series.bgfmt %>"/>
+				<div id="intro">
+					<%= @series.description.gsub('|', ' ') %>
+          <br/><br/>
+          Enjoyed a story? Got a question? Please, leave a comment
+          or <a target="_new" href="mailto:hoophic@gmail.com?subject=<%= CGI::escape(@series.title) %>">contact us</a>!
+				</div>
+			</div>
+
+    	<% @stories.each_with_index do |story,index| %>
+				<div class="story story<%= index & 1 %>">
+
+						<a name="story<%= story.id %>"></a>
+		    		<% if story.pdf_available? %>
+							<a href="<%= story.pdf_path %>"><img class="float<%= index & 1 %>" src="/images/<%= @series.name %>/<%= story.acronym %>/thumb.<%= @series.imfmt %>"/></a>
+							<p class="title"><a href="<%= story.pdf_path %>"><%= story.name.upcase %></a></p>
+		    		<% else %>
+							<img class="float<%= index & 1 %>" src="/images/<%= @series.name %>/<%= story.acronym %>/thumb.<%= @series.imfmt %>"/>
+							<p class="title"><%= story.name.upcase %></p>
+						<% end %>
+						<p class="author"><%= ('by ' + story.author) unless story.author.blank? %></p>
+						<p class="synopsis"><%= esc(story.description.gsub("\r\n\r\n",'<br/><br/>').gsub("\r\n",' ')) %></p>
+						<p class="available">
+              <% if	story.pdf_available? %>
+                <% if story.has_chapters? %>
+                  Chapter
+                  <% story.chapters.each_with_index do |ch, idx| %>
+                    <% if ch.pdf_available? %>
+                      <a href="<%= ch.pdf_path	%>"><%= idx + 1 %></a>
+                    <% end %>
+                  <% end %>
+                <% else %>
+                  Released on	<%=	story.pdate	%>.	Available	by clicking	<a href="<%= story.pdf_path	%>">here</a>!
+                <% end %>
+              <% else	%>
+                Available	from <%= story.pdate %>
+              <% end %>
+						</p>
+						<% if story.img_available? %>
+							<span id="sharebar<%= story.id %>" class="social addthis_default_style">
+							  <a class="addthis_button_twitter"></a>
+							  <a class="addthis_button_facebook"></a>
+							  <a class="addthis_button_email"></a>
+							  <a class="addthis_button_compact"></a>
+							  |
+								<a class="comment_btn" id="cmt<%= story.id %>">
+									<% if story.comments.length > 1 %>
+									  <%= story.comments.length %> comments
+									<% elsif story.comments.length == 1 %>
+									  one comment
+									<% else %>
+									  leave a comment
+									<% end %>
+							  </a>
+		  					<% unless story.gb.blank? %>
+								|
+								<a href="<%= story.gb %>" target="new">GallifreyBase thread</a>
+							<% end %>
+							<% unless story.os.blank? %>
+								|
+								<a href="<%= story.os %>" target="new">OutpostSkaro thread</a>
+							<% end %>
+							</span>
+							<script type="text/javascript">
+							addthis.toolbox('#sharebar<%= story.id %>', {}, {
+								url: "http://hoophic.gomes.com.es/<%=	@series.name %>/story/<%=	story.acronym	%>",
+								title: "<%= story.heading %>",
+								templates: {
+									twitter: "Loving {{title}} {{url}}<%= (' ' + story.yfrog) unless story.yfrog.blank? %> #<%= @series.name %>"
+								}
+							});
+							</script>
+						  <div class="comment" id="comment<%= story.id %>">
+								<% story.comments.each do |comment| %>
+								  <hr/>
+								  <div class="cmt_from">On <%= comment.when.strftime('%a %e %b %Y at %l.%M%P') %>, <%= comment.from %> said:</div>
+								  <div class="notes"><%= comment.comment %></div>
+									<% if comment.hidden == 0 %>
+										<span class="leaveit">[<a href="/<%= @series.name %>/comment/hide/<%= story.id %>/<%= comment.id %>/m" onClick="return confirm('Do you really want to delete this comment?');">delete</a>]</span>
+									<% end %>
+								<% end %>
+								<hr/>
+								<div class="comment_form">
+									Please leave a comment
+									<div class="notes"><%= COMMENTINPUTMESSAGE %></div>
+								</div>
+								<form action="/<%= @series.name %>/comment/add/m" method="post">
+									<input type="hidden" name="comment_story_id" value="<%= story.id %>"/>
+
+									<table>
+										<tr><td class="label">From:</td><td class="wider"><input type="text" name="comment[from]" /></td></tr>
+										<tr><td>Comment:</td><td class="wider"><textarea name="comment[comment]"></textarea></td></tr>
+										<tr><td></td><td class="wider"><input name="comment_submit" type="submit"/><input type="button" value="Cancel"/></td></tr>
+									</table>
+								</form>
+							</div>
+
+					<% end %>
+				</div>
+			<% end %>
+
+	</body>
+</html>

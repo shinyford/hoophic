@@ -1,0 +1,116 @@
+
+html,body {
+  font-family: Calibri,Verdana,Arial,sans-serif;
+}
+
+#header {
+	text-align: center;
+}
+
+#header img {
+	max-width: 100%;
+}
+
+#intro {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	font-weight: bold;
+	color: #0E3185;
+}
+
+#heading {
+  font-family: BigFinish,Calibri,Verdana,Arial,sans-serif;
+	font-weight: bold;
+	padding-top: 12px;
+}
+
+.title {
+  font-family: BigFinish,Calibri,Verdana,Arial,sans-serif;
+	font-weight: bold;
+	font-size: 120%;
+	color: #0E3185;
+	font-weight: bold;
+}
+
+.author {
+	font-size: 107%;
+	color: #0E3185;
+	font-weight: bold;
+}
+
+td {
+  font-size: 81%;
+  font-style: italic;
+  text-align: right;
+  vertical-align: top;
+	color: #0E3185;
+}
+
+td.wider {
+    width: 100%;
+}
+
+.comment_form {
+	font-weight: bold;
+	font-style: italic;
+	color: #0E3185;
+}
+
+.notes {
+	font-weight: normal;
+}
+
+textarea {
+    height: 80px;
+}
+
+input, textarea {
+    width: 100%;
+}
+
+.story {
+	border-top: 1px solid #AAA;
+	padding: 0;
+	margin-top: 6px;
+	margin-bottom: 6px;
+	padding-top: 6px;
+}
+
+.story0 {
+    background-color: #EEE;
+}
+
+.float0 {
+    float: left;
+    margin-right: 6px;
+    margin-bottom: 6px;
+}
+
+.float1 {
+    float: right;
+    margin-left: 6px;
+    margin-bottom: 6px;
+}
+
+.comment {
+    display: none;
+}
+
+.cmt_from {
+    font-weight: bold;
+}
+
+.leaveit {
+    font-size: 75%;
+    cursor: crosshair;
+}
+
+.leaveit a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.leaveit a:hover {
+    text-decoration: underline;
+}
+

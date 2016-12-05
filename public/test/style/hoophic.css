@@ -1,0 +1,228 @@
+
+html,body {
+  text-align: center;
+	font-family: BigFinish,Calibri,Verdana,Arial,sans-serif;
+  font-weight: bold;
+  height: 100%;
+	font-size: 16px;
+  width: 90%;
+  margin: 0;
+  padding: 0;
+  background-color: #005871;
+  z-index: 10;
+  overflow: hidden;
+}
+
+#comment_bg {
+    display: none;
+    position: absolute;
+    background-color: black;
+    opacity: 0.8;
+    filter: alpha(opacity=80);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 190;
+}
+
+#comment_input {
+    display: none;
+    position: absolute;
+    background-color: white;
+    width: 500px;
+    top: 150px;
+    text-align: left;
+    z-index: 200;
+    padding: 6px;
+	box-shadow: 0 0 12px 12px white;
+}
+
+#comment_input h1 {
+	font-size: 110%;
+	color: #005871;
+}
+
+#comment_holder {
+    height: 350px;
+    overflow: auto;
+}
+
+#comment_form {
+    color: #005871;
+}
+
+.leaveit {
+    font-size: 60%;
+    font-weight: normal;
+    color: black;
+}
+
+.notes {
+	font-style: italic;
+	font-weight: normal;
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
+#comment_input td {
+	color: black;
+	font-weight: normal;
+	text-align: right;
+	vertical-align: top;
+}
+
+#comment_input table, input {
+	width: 100%;
+}
+
+#comment_input textarea {
+	width: 100%;
+	height: 100px;
+}
+
+.comment_title {
+	display: none;
+}
+
+.comment_btn:hover {
+    text-decoration: underline;
+}
+
+#bg {
+	position:absolute;
+	top:0;
+	left:0;
+	height:100%;
+	z-index: 1;
+	overflow: hidden;
+}
+
+#header {
+	position: relative;
+	width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+	top: 5;
+}
+
+#all {
+	z-index: 5;
+	position: absolute;
+	top: 0;
+	left: 0;
+	text-align: center;
+	height: 100%;
+	width: 100%;
+}
+
+.data {
+	position: absolute;
+	top: 5px;
+	color: white;
+	text-shadow: black -3px 0 3px, black 0 -3px 3px, black 3px 0 3px, black 0 3px 3px;
+	height: 1em;
+	filter: Shadow(Color=black,
+			Direction=135,
+			Strength=5);
+	overflow: hidden;
+	z-index: 100;
+	width: 100%;
+}
+
+.data div {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+  width: 80%;
+  height: auto;
+	padding: 4px;
+}
+
+.data div p {
+	margin: 0;
+	margin-bottom: 6px;
+	margin-right: 10px;
+}
+
+#intro {
+	display: none;
+	position: absolute;
+	font-size: 140%;
+	text-shadow: black -2px 0 4px, black 0 -2px 4px, black 2px 0 4px, black 0 2px 4px;
+	height: 1em;
+	filter: Shadow(Color=black,
+			Direction=135,
+			Strength=5);
+	top: 150px;
+	left: 0;
+	text-align: center;
+	color: white;
+	z-index: 100;
+}
+
+a {
+	color: white;
+	text-decoration: underline;
+	font-weight: bold;
+}
+
+a:hover {
+	text-decoration: double-underline;
+}
+
+#shadow div p a {
+	color: blue;
+}
+
+#stuff {
+	position:absolute;
+	top: 10px;
+	left: 10px;
+	color: white;
+	z-index: 1000;
+}
+
+.title {
+	font-weight: bold;
+	font-size: 180%;
+}
+
+.author {
+	font-weight: bold;
+	font-size: 150%;
+}
+
+.synopsis {
+	font-family: Calibri,Verdana,Arial,Helvetica,san-serif;
+	font-weight: normal;
+	margin-top: 6px;
+}
+
+.available {
+	font-weight: bold;
+	font-size: 130%;
+	font-style: italic;
+}
+
+#stories {
+	position: relative;
+  width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	display: none;
+}
+
+#stories div {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+.story img {
+	width: 10px;
+	border: 1px solid white;
+	box-shadow: 0 0 3px 3px #AAA;
+	clear: both;
+}

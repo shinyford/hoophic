@@ -1,0 +1,476 @@
+<html>
+	<head>
+		<title><%= @series.title %></title>
+
+    <link	rel="shortcut	icon"	href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>" type="image/vnd.microsoft.icon" />
+    <link	rel="icon" href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>"	type="image/vnd.microsoft.icon"	/>
+
+		<link	rel="stylesheet" href="/<%=	RESOURCEBASE %>style/common.css" type="text/css" />
+		<link	rel="stylesheet" href="/<%=	RESOURCEBASE %>style/hoophic.css"	type="text/css"	/>
+
+		<script	type="text/javascript" src="/<%= RESOURCEBASE	%>js/jquery-1.6.2.min.js"></script>
+		<script	type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js"></script>
+
+		<style type="text/css">
+			<%= @series.css %>
+		</style>
+
+		<!--[if	IE 6]>
+		<style type="text/css">
+		html { overflow-y: hidden; }
+		body { overflow-y: auto; }
+		.bg	{	position:absolute; z-index:-1; }
+		#all { position:static;	}
+		</style>
+		<![endif]-->
+
+		<% if	@highlight %>
+		<meta	property="og:title"	content="<%= @series.title %>: <%= esc(@highlight.heading) %>"/>
+		<meta	property="og:description"	content="<%= esc(@highlight.description) %>"/>
+		<meta	property="og:image"	content="http://hoophic.gomes.com.es/<%= @series.name	%>/thumb/<%= @highlight.acronym	%>.<%= @series.imfmt %>"/>
+		<% end %>
+
+		<script	type="text/javascript">
+
+				var	tw = 0,	winheight = 0, winwidth = 0, storieswidth = 0,	coversOffset = 0,	numstories = <%= @stories.length %>;
+				var	fade_delay = 750;
+				var scalefactor = 1.75;
+				var winmargin = 20;
+				var	covers = [];
+				var	protectPlaceImages = <%= @highlight	?	100	:	0	%>;
+				var	stories;
+				var	bgnum	=	0, lastindex = <%= @stories.length %>;
+				var fading = false;
+
+				var	story_lengths	=	[<%= @stories.collect	{	|s|	s.description.length }.join(', ')	%>];
+
+				var	backgrounds	=	[
+					<%=
+						@stories.collect { |s|
+							if s.background_available?
+								'["/images/' + @series.name	+	'/' + s.acronym + '/bg.jpg", ' + s.bgwidth.to_s + ', ' + s.bgheight.to_s + ']'
+							else
+								'[false]'
+							end
+						}.join(',	')
+					%>,	["/images/<%=	@series.name %>/sysimage/bg.jpg", <%= @series.bgwidth %>, <%= @series.bgheight %>]
+				];
+
+				var infobox = '';
+				function log(t) {
+					if (infobox == '') infobox = $('#info');
+					if (infobox) infobox.text(t);
+				}
+
+				function viewbg(i, test, force) {
+					var bg = $('#bg'+i), vis = bg.is(':visible');
+					if (force || vis) {
+						var background = backgrounds[i];
+						var wo, ho, w = background[1], h = background[2];
+						if (test(h, winheight)) {
+							w = w * winheight / h;
+							h = winheight;
+						}
+						if (test(w, winwidth)) {
+							h = h * winwidth / w;
+							w = winwidth;
+						}
+						if (h < winheight && w < winwidth) {
+							w = w * winheight / h;
+							h = winheight;
+							if (w > winwidth) {
+								h = h * winwidth / w;
+								w = winwidth;
+							}
+						}
+						wo = (w - winwidth) / 2;
+						ho = (h - winheight) / 2;
+						bg.animate({'top': -ho + 'px', 'left': -wo + 'px', 'width': w	+	'px', 'height': h + 'px'}, function() {
+							fading = false;
+						});
+					}
+					return vis;
+				}
+
+				function viewbgs(test, force) {
+					var vis = false;
+					for	(var i = 0;	i	<= numstories; ++i)	{
+						if (backgrounds[i][0]) {
+							vis = (viewbg(i, test, force) || vis);
+						}
+					}
+					fading = vis;
+				}
+
+				function checkSize() {
+					winheight = window.innerHeight || $(window).height();
+					winwidth = window.innerWidth ||	$(window).width();
+					storieswidth = winwidth - (numstories * (parseInt($('#stories img').css('marginLeft')) + parseInt($('#stories img').css('marginRight'))));
+					tw = Math.min(100,
+							storieswidth / (numstories	+	2));
+					viewbgs(function(a, b) { return a < b; }, true);
+					$('#all').width(winwidth + 'px').height($(window).height() + 'px');
+				}
+
+				function showDetails(index)	{
+					if (lastindex	!= index)	{
+						var	alignment	=	1	-	(index & 1);
+
+						$('.data').stop();
+						$('.bg').stop();
+						for	(var i = 0;	i	<	numstories;	++i) {
+							if (i	!= index)	$('#data'+i).fadeOut(200);
+						}
+
+						$('#intro').fadeOut(fade_delay);
+						$('#data'+index).fadeTo(fade_delay,	1.0);
+
+						if (backgrounds[index][0] != backgrounds[lastindex][0])	{
+							$('.bg').stop();
+							var	idx	=	(backgrounds[index][0] ?	index	:	numstories);
+							for	(var i = 0;	i	<= numstories; i++)	{
+								if (backgrounds[i][0]) {
+									if (i	== idx)	{
+										// $('#bg'+i).fadeIn(fade_delay);
+										$('#bg'+i).css({'display': 'block',	'opacity': 1.0});
+									} else {
+										// $('#bg'+i).fadeOut(fade_delay);
+										$('#bg'+i).css({'display': 'block',	'opacity': 0.0});
+									}
+								}
+							}
+						}
+						if (!backgrounds[index][0] && winheight > winwidth) {
+							var bg = backgrounds[numstories];
+							var bgvisw = ((bg[1] * bg[2]) / winheight) - 100;
+							$('#bg' + numstories).animate({'left': (-(bgvisw * index / numstories)) + 'px'});
+						}
+						lastindex	=	index;
+					}
+				}
+
+				function placeImage(mouseX,	index) {
+					var	cover	=	$('#cover'+index);
+					var	loc	=	cover.position().left	+	(cover.width()>>1);
+					var	newwidth = Math.max(tw,	<%=	@series.imwidth	%> - (Math.abs(mouseX	-	loc)/scalefactor));
+					$('#cover'+index).css({'z-index': newwidth}).animate({width:	newwidth + 'px'},	fade_delay);
+					return newwidth;
+				}
+
+				function positionStories(wholewidth, mouseX) {
+					var	offset, s1 = storieswidth - (2*winmargin);
+
+					if (wholewidth > s1) {
+						offset = winmargin - (mouseX * (wholewidth - s1) / storieswidth);
+					}	else {
+						offset = (storieswidth - wholewidth) >>	1;
+					}
+					stories.animate({left: offset	+	'px'}, fade_delay);
+				}
+
+				function placeImages(e)	{
+					if (protectPlaceImages++ ==	0	&& e.pageY > $(window).height()	-	(tw	*	2))	{
+						var	crop,	mouseX = e.pageX;
+
+						$('.cover').stop();
+						stories.stop();
+						var	cw =	0, ww = 0, wholewidth	=	-5;
+						var	offset = stories.offset().left;
+						var index = 0; //Math.floor(mouseX * numstories / (winwidth+coversOffset));
+						for	(var i = 0;	i	<	numstories;	i++) {
+							var	w	=	placeImage(mouseX	-	offset,	i);
+							if (w	>= cw) index = i,	cw = w, ww = wholewidth;
+							wholewidth +=	w	+	5;
+						}
+						positionStories(wholewidth,	mouseX);
+						showDetails(index);
+					}
+					protectPlaceImages--;
+				}
+
+				function introIn()	{
+					$('.data').fadeOut(fade_delay);
+					$('.cover').animate({width:	tw + 'px'},	fade_delay);
+					$('#intro').fadeIn(fade_delay);
+					stories.animate({left: coversOffset	+	'px'}, fade_delay);
+				}
+
+				$(window).load(function()	{
+					$(window).resize(checkSize);
+					checkSize();
+
+					$('#fademe').mouseover(function() {
+						if (!fading) {
+							fading = true;
+							$('#stories, .data, #all').fadeOut(fade_delay);
+							viewbgs(function(a, b) { return a > b; }, false);
+						}
+					});
+
+					$('#fademe').mouseout(function() {
+						if (!fading) {
+							fading = true;
+							$('#stories, #all').fadeIn(fade_delay);
+							viewbgs(function(a, b) { return a < b; }, false);
+							introIn();
+						}
+					});
+
+					stories	=	$('#stories');
+					$('.cover').width(tw);
+
+					coversOffset = (storieswidth - ((tw+5)*numstories) + 5)	/ 2;
+					stories.width(winwidth + 2000).css({left:	coversOffset + 'px'});
+
+					$('#header').click(introIn);
+
+					$('.comment_btn').click(function() {
+						var	id = this.id.substring(3);
+						var	f	=	document.forms[0].elements;
+
+						f['comment_story_id'].value	=	id;
+						$('.comment_title').hide();
+						$('.comment_title'+id).show();
+
+						$('#comment_input').css({left: ((winwidth	-	$('#comment_input').width()) / 2)	+	'px'});
+						$('#comment_bg').fadeTo(fade_delay,	0.8);
+						$('#comment_input').fadeIn(fade_delay);
+					});
+
+					$('#comment_cancel,	#comment_bg').click(function() {
+						$('#comment_bg').fadeOut(fade_delay);
+						$('#comment_input').fadeOut(fade_delay);
+					});
+
+					$('#intro').css({width:	winwidth + 'px', top:	$('#header').height()	+	'px'});
+					$('#header').width(winwidth);
+					$('#intro').fadeIn(fade_delay);
+
+					var	w	=	($.browser.msie	?	winwidth : winwidth	-	100);
+					$('.data').width(w).css({top:	$('#header').height()	+	'px'});
+          $('.intro').fadeIn(fade_delay);
+
+					//$('.cover, .data').mousemove(placeImages);
+					$('.cover').mousemove(placeImages);
+					stories.fadeIn(fade_delay, function()	{
+						for	(var i = 0;	i	<	numstories;	i++) {
+							if (backgrounds[i][0])	{
+								$('#bg'+i).attr('src', backgrounds[i][0]);
+							}
+						}
+						checkSize();
+						<% if	@highlight %>
+							window.setTimeout(highlight, 100);
+						<% end %>
+					});
+
+					fading = false;
+				});
+
+				<% if	@highlight %>
+				function highlight() {
+					var	wholewidth = 0, cw = 0;
+					for	(var i = 0;	i	<	numstories;	i++) {
+						var	w	=	Math.max(tw, <%= @series.imwidth %>	-	Math.abs((<%=	highlightIndex %>	-	i) * <%= @series.imwidth %>	/	scalefactor));
+						$('#cover' + i).animate({width:	w	+	'px'}, fade_delay);
+						wholewidth +=	w	+	5;
+						if (w > cw) cw = w;
+					}
+					positionStories(wholewidth,	(cw/2) + (<%= highlightIndex	%> * winwidth / numstories));
+					showDetails(<%=	highlightIndex %>);
+					window.setTimeout(function() {
+						protectPlaceImages = 0;
+						fading = false;
+					}, fade_delay);
+				}
+				<% end %>
+		</script>
+
+	</head>
+	<body>
+		<% if	@highlight and @highlight.background_available? %>
+			<% chosen = @highlight %>
+			<img id="bg<%= highlightIndex	%>"	class="bg" src="/images/<%= @series.name	%>/<%= @highlight.acronym %>/bg.jpg"/>
+			<img id="bg<%= @stories.length %>" class="bg hideim" src="/images/<%= @series.name	%>/sysimage/bg.<%= @series.bgfmt %>"/>
+		<% elsif	@nextup and @nextup.background_available? %>
+			<% chosen = @nextup %>
+			<img id="bg<%= nextupIndex %>"	class="bg" src="/images/<%= @series.name %>/<%=	@nextup.acronym %>/bg.jpg"/>
+			<img id="bg<%= @stories.length %>" class="bg hideim" src="/images/<%= @series.name %>/sysimage/bg.<%= @series.bgfmt %>"/>
+		<% else	%>
+			<% chosen = nil %>
+			<img id="bg<%= @stories.length %>" class="bg"	src="/images/<%= @series.name %>/sysimage/bg.<%= @series.bgfmt %>"/>
+		<% end %>
+		<% @stories.each_with_index	do |story,index| %>
+			<% if	story	!= chosen and	story.background_available? %>
+				<img id="bg<%= index %>" class="bg hideim" src=""/>
+			<% end %>
+		<% end %>
+
+		<div id="stories">
+			<div>
+			<% @stories.each_with_index	do |story,index| %>
+				<% if	story.pdf_available? then	%>
+					<a href="<%= story.pdf_path	%>"><img class="cover" id="cover<%= index %>" src="<%= story.absolute_image_path %>"/></a>
+				<% else	%>
+					<img class="cover" id="cover<%= index %>" src="<%= story.absolute_image_path %>"/>
+				<% end %>
+			<% end %>
+			</div>
+		</div>
+
+		<% @stories.each_with_index	do |story, index|	%>
+		<div class="data data<%= index & 1 %>" id="data<%= index %>">
+			<p class="title">
+				<% if	story.pdf_available? %>
+					<a href="<%= story.pdf_path	%>"><%=	story.name.upcase unless story.name.nil?	%></a>
+				<% else%>
+					<%=	story.name.upcase	unless story.name.nil? %>
+				<% end %>
+			</p>
+			<% unless	story.author.blank?	%><p class="author">by <%= story.author	%></p><% end %>
+			<% unless	story.description.blank? %><p	class="synopsis"><%= esc(story.description)	%><br/><br/></p><% end %>
+			<p class="available">
+				<% if	story.pdf_available? %>
+				  <% if story.has_chapters? %>
+				    Chapter
+				    <% story.chapters.each_with_index do |ch, idx| %>
+				      <% if ch.pdf_available? %>
+				        [<a href="<%= ch.pdf_path	%>"><%= idx + 1 %></a>]
+				      <% end %>
+				    <% end %>
+				  <% else %>
+  					Released on	<%=	story.pdate	%>.	Available	by clicking	<a href="<%= story.pdf_path	%>">here</a>!
+  				<% end %>
+				<% else	%>
+					Available	from <%= story.pdate %>
+				<% end %>
+			</p>
+			<% if	story.img_available? %>
+				<span	id="sharebar<%=	index	%>"	class="data<%= index & 1 %>	social addthis_default_style">
+					<a class="addthis_button_twitter"></a>
+					<a class="addthis_button_facebook"></a>
+					<a class="addthis_button_email"></a>
+					<a class="addthis_button_compact"></a>
+					|
+					<a class="comment_btn" id="cmt<%=	story.id %>">
+						<% if	story.comments.length	>	1	%>
+							<%=	story.comments.length	%> comments
+						<% elsif story.comments.length ==	1	%>
+							one	comment
+						<% else	%>
+							leave	a	comment
+						<% end %>
+					</a>
+					<% unless story.os.blank? and story.gb.blank? %>
+            &nbsp;| Forums:
+            <% unless story.os.blank? %>
+              <a href="<%= story.os %>" target="new">OutpostSkaro</a>
+            <% end %>
+            <% unless story.gb.blank? %>
+              <a href="<%= story.gb %>" target="new">GalliBase</a>
+            <% end %>
+          <% end %>
+				</span>
+				<script	type="text/javascript">
+				addthis.toolbox('#sharebar<%=	index	%>', {}, {
+					url: "http://hoophic.gomes.com.es/<%=	@series.name %>/story/<%=	story.acronym	%>",
+					title: "<%=	story.heading	%>",
+					templates: {
+						twitter: "Loving {{title}} {{url}}<%= (' ' + story.yfrog) unless story.yfrog.blank? %> #<%= @series.name %>"
+					}
+				});
+				</script>
+			<% end %>
+		</div>
+		<% end %>
+
+		<div id="all">
+			<div class="intro" id="fademe">view<br/>background</div>
+
+			<% if	request.cookies[@series.cookie_name] == @series.passphrase %>
+				<div class="intro" id="edit">
+					<a href="/<%=	@series.name %>/edit"	target="_edit">edit</a>
+					<div id="info"></div>
+				</div>
+			<% end %>
+
+			<div class="intro" id="header">
+				<img src="/images/<%= @series.name %>/sysimage/logo.png"/>
+			</div>
+			<div class="intro" id="intro">
+				<%=	@series.description.gsub('|',	'<br/>') %>
+				<br/>
+				<% if	@nextup %>
+					<br/>
+					<i>
+					<% if	@nextup.pdf_available? %>
+						Now	available: <a	href="<%=	@nextup.pdf_path %>"><%= @nextup.name	%></a>
+					<% else	%>
+						Available	from <%= @nextup.pdate %>: <%= @nextup.name	%>
+					<% end %>
+					</i>
+				<% end %>
+        <br/>
+        Enjoyed this? Got a question? Please, comment on a story or <a target="_new" href="mailto:hoophic@gmail.com?subject=<%= CGI::escape(@series.title) %>">contact us</a>!
+				<!--
+          <% if @series.others.length > 0 %>
+  				<br/><br/>
+  				<i>Other series:</i>
+  				<% @series.others.each do |s| %>
+  					[<a href="/<%= s.name %>" title="<%= s.title %>"><%= s.name.upcase %></a>]
+  				<% end %>
+        // -->
+				<% end %>
+			</div>
+		</div>
+
+		<div id="comment_bg"></div>
+		<div id="comment_input">
+
+			<h1>
+			<% @stories.each_with_index	do |story,index| %>
+				<span	class="comment_title comment_title<%=	story.id %>"><%= story.heading %></span>
+			<% end %>
+			</h1>
+
+			<div id="comment_holder">
+				<% @stories.each_with_index	do |story,index| %>
+					<% if	story.comments.length	>	0	%>
+						<div class="comment_title	comment_title<%= story.id	%>">
+							<% story.comments.each do	|comment|	%>
+								<hr/>
+								<div class="cmt_from">On <%= comment.when.strftime('%a %e	%b %Y	at %l.%M%P') %>, <%= comment.from	%> said:</div>
+								<div class="notes"><%= comment.comment %></div>
+								<% if	comment.hidden ==	0	%>
+									<a class="leaveit" href="/<%=	@series.name %>/comment/hide/<%= story.id	%>/<%= comment.id	%>"	onClick="return	confirm('Do	you	really want	to delete	this comment?');">[delete]</a>
+								<% end %>
+							<% end %>
+							<hr/>
+						</div>
+					<% end %>
+				<% end %>
+
+				<div id="comment_form">
+					Please leave a comment
+					<div class="notes"><%= COMMENTINPUTMESSAGE %></div>
+					<form	action="/<%= @series.name	%>/comment/add"	method="post">
+					<input type="hidden" id="comment_story_id" name="comment_story_id" />
+
+					<table>
+						<tr><td>From:</td><td><input type="text" id="comment_from" name="comment[from]"	/></td></tr>
+						<tr><td>Comment:</td><td><textarea id="comment_comment"	name="comment[comment]"></textarea></td></tr>
+						<tr><td></td><td><input	name="comment_submit"	type="submit"/><input	id="comment_cancel"	type="button"	value="Cancel"/></td></tr>
+					</table>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script	type="text/javascript">
+
+		if ($(window).width()	<	500	|| $(window).height()	<	500) location.href +=	'/m';
+
+		</script>
+
+	</body>
+</html>

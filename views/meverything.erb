@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Hoophic - a Whoniverse of Fiction</title>
+
+    <link	rel="shortcut	icon"	href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>" type="image/vnd.microsoft.icon" />
+    <link	rel="icon" href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>"	type="image/vnd.microsoft.icon"	/>
+
+    <style>
+
+      body {
+        text-align:center;
+        background-color: #003b6f;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+    </style>
+
+  </head>
+  <body>
+      <% @series.each do |s| %>
+        <a href="/<%= s.name %>"><img alt="<%= s.title %>" src="/images/<%= s.name %>/sysimage/logo.png"/></a>
+        <br/><br/>
+      <% end %>
+  </body>
+</html>

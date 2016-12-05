@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+	<head>
+	<title>Hoophic - a Whoniverse of Fiction</title>
+
+	<link	rel="shortcut	icon"	href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>" type="image/vnd.microsoft.icon" />
+	<link	rel="icon" href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>"	type="image/vnd.microsoft.icon"	/>
+
+	<style>
+
+		body {
+		background-color: #1F2327;
+		text-align: center;
+		}
+
+		p.justify0 {
+			padding-left: auto;
+			margin-left: 100px;
+		}
+
+		p.justify1 {
+			padding-left: auto;
+		}
+
+		#bg {
+		position: absolute;
+	height: 1px;
+	width: 1px;
+		z-index: -1;
+		}
+
+		.seriesimg {
+			height: 1px;
+	}
+
+	</style>
+
+		<!--[if	IE 6]>
+		<style type="text/css">
+		html { overflow-y: hidden; }
+		body { overflow-y: auto; }
+		.bg	{	position:absolute; z-index:-1; }
+		#all { position:static;	}
+		</style>
+		<![endif]-->
+
+	<script	type="text/javascript" src="/<%= RESOURCEBASE	%>js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript">
+
+		var standardHeight = 0, substandardHeight;
+
+			function resizeBg() {
+				var bg = $('#bg');
+				var ww = $(window).width(), wh = $(window).height();
+				//var bw = bg.width(), bh = bg.height();
+				var bw = 1440, bh = 900; // bg.jpg
+				//var bw = 1218, bh = 874; // bg.png
+				
+				if (bw < ww) {
+					bh = bh * ww / bw;
+					bw = ww;
+				}
+				if (bh < wh) {
+					bw = bw * wh / bh;
+					bh = wh;
+				}
+
+				var wo = (ww - bw)/2;
+				var ho = (wh - bh)/2;
+
+				standardHeight = ($(window).height() / <%= @series.length + 1%>) - 10;
+				substandardHeight = (standardHeight * <%= @series.length %> / <%= @series.length + 1%>) - 10;
+
+				bg.animate({'top': ho + 'px', 'left': wo + 'px', 'width': bw + 'px', 'height': bh + 'px'}, 0);
+				$('.seriesimg').animate({'height': standardHeight}, 0);
+			}
+
+			$(window).load(function()	{
+				resizeBg();
+				$(window).resize(resizeBg);
+				$('.seriesimg').mouseover(function() {
+					$('.seriesimg').stop().animate({'height': substandardHeight}, 500);
+				$(this).stop().animate({'height': standardHeight * 2}, 500);
+				})
+				$('.seriesimg').mouseout(function() {
+					$('.seriesimg').stop().animate({'height': standardHeight}, 500);
+				})
+			});
+
+		</script>
+	</head>
+	<body>
+	<img id="bg" src="/images/bg.jpg"/>
+		<% @series.each_with_index do |s, i| %>
+		<p class="justify<%= i & 1 %>">
+			<a href="/<%= s.name %>"><img id="logo<%= i %>" class="seriesimg" alt="<%= s.title %>" src="/images/<%= s.name %>/sysimage/logo.png"/></a>
+		</p>
+		<% end %>
+
+		<script	type="text/javascript">
+
+		if ($(window).width()	<	500	|| $(window).height()	<	500) location.href = '/m';
+
+		</script>
+
+	</body>
+</html>

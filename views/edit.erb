@@ -1,0 +1,206 @@
+<%
+
+@criterion = (params['criterion'] || 'date').to_sym
+@sortorder = (params['order'] || 'asc')
+@alternateorder = (@sortorder == 'desc' ? 'asc' : 'desc')
+
+def ordinize(fieldname, key='new')
+  "storydata[#{key}][#{fieldname}]"
+end
+
+def fileinput(updateinfo)
+	"Uploaded #{updateinfo[0].strftime(TIMEFORMAT)}, size #{updateinfo[1]/1024}kb" if updateinfo
+end
+
+%>
+<html>
+  <head>
+    <title>Editor: <%= @series.title || 'Unnamed series' %></title>
+
+    <link	rel="shortcut	icon"	href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>" type="image/vnd.microsoft.icon" />
+    <link	rel="icon" href="http://hoophic.gomes.com.es/favicon.ico?v=<%= FAVICONV %>"	type="image/vnd.microsoft.icon"	/>
+
+    <link rel="stylesheet" href="/style/common.css" type="text/css" />
+    <link rel="stylesheet" href="/style/edit.css" type="text/css" />
+
+    <% if @passphrase == @series.passphrase or @passphrase == SECRET_PASSWORD %>
+    <script type="text/javascript" src="/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript">
+
+			var images = [
+<%= @stories.collect { |s| "{id: #{s.id}, im: '#{s.editim}', bg: '#{s.editbg}'}" }.join(",\n") %>
+			];
+
+      $(window).load(function() {
+        $('.partedit').click(function() {
+        		var index = parseInt(this.id.substring(8));
+						document.forms[0].elements['keepopen'].value = index;
+						$('.partedit td').css({color: 'black'});
+        		$('.fulledit').hide();
+        		$('#partedit' + index + ' td').css({color: 'red'});
+        		$('.fe' + index).show();
+        });
+
+				for (var i = 0; i < images.length; i++) {
+					var im = images[i];
+					$('#im'+im.id).attr('src', im.im);
+					$('#bg'+im.id).attr('src', im.bg);
+				}
+
+      })
+
+    </script>
+		<% end %>
+
+  </head>
+  <body>
+    <form id="storyform" action="/<%= @series.name %>/edit" enctype="multipart/form-data" method="post">
+		<input name="keepopen" type="hidden" value="<%= @keepopen %>"/>
+
+    <% if @passphrase == @series.passphrase or @passphrase == SECRET_PASSWORD %>
+
+    <table id="seriestab">
+    	<tr>
+        <td>Series</td>
+        <td class="light">
+          <%= @series.name %>
+          <span class="targets">
+            [<a href="/<%= @series.name %>" target="_new">site</a>] [<a href="/<%= @series.name %>/m" target="_new">mobile</a>]
+            |
+            <% Series.all.each do |s| %>
+              <% if s != @series %>
+                [<a href="/<%= s.name %>/edit" target="_new"><%= s.name %></a>]
+              <% end %>
+            <% end %>
+          </span>
+        </td>
+      </tr>
+    	<tr><td>Title</td><td class="light"><input type="text" name="seriesupdate[title]" value="<%= esc @series.title %>"/></td></tr>
+    	<tr><td>Start date</td><td class="light"><input type="text" name="seriesupdate[startdate]" value="<%= @series.pdate %>"/></td></tr>
+    	<tr><td>Logo</td><td class="light"><input type="file" class="filename" name="seriesupdate[logo]" /><a href="/images/<%= @series.name	%>/sysimage/logo.png"><%= fileinput(@series.has_logo?) %></a></td></tr>
+    	<tr><td>Mobile logo</td><td class="light"><input type="file" class="filename" name="seriesupdate[mlogo]" /><a href="/images/<%= @series.name %>/sysimage/mlogo.png"><%= fileinput(@series.has_mlogo?) %></a></td></tr>
+    	<tr><td>Default image</td><td class="light"><input type="file" class="filename" name="seriesupdate[image]" /><a href="/images/<%= @series.name %>/sysimage/image.<%= @series.imfmt %>"><%= fileinput(@series.has_default_story_image?) %></a></td></tr>
+    	<tr><td>Default b/g</td><td class="light"><input type="file" class="filename" name="seriesupdate[bg]" /><a href="/images/<%= @series.name	%>/sysimage/bg.<%= @series.bgfmt %>"><%= fileinput(@series.has_background?) %></a></td></tr>
+    	<tr><td>Description</td><td class="light"><textarea name="seriesupdate[description]"><%= @series.description.gsub('|', "\n") %></textarea></td></tr>
+    	<tr><td>Extra CSS</td><td class="light"><textarea name="seriesupdate[css]"><%= @series.css %></textarea></td></tr>
+    </table>
+
+      <table>
+	  		<tr>
+	  			<th></th>
+	  			<th><a href="?criterion=date&order=<%= @alternateorder %>">Ordinal<a/></th>
+	  			<th class="date"><a href="?criterion=date&order=<%= @alternateorder %>">Date<a/></th>
+	  			<th class="title"><a href="?criterion=name&order=<%= @alternateorder %>">Title<a/></th>
+	  			<th><a href="?criterion=author&order=<%= @alternateorder %>">by<a/></th>
+	  			<th><a href="?criterion=downloads&order=<%= @alternateorder %>">Downloads<a/> <a href="?criterion=last_download_time&order=<%= @alternateorder %>">(at)<a/></th>
+	  			<th><a href="?criterion=numcomments&order=desc">No. of comments<a/> <a href="?criterion=last_comment&order=desc">(last)<a/></th>
+	  		</tr>
+	  		<%
+		  		stors = @stories.sort { |a,b|
+		  			ac = a.send(@criterion)
+		  			bc = b.send(@criterion)
+		  			if ac == bc
+		  				a.ordinal <=> b.ordinal
+		  			else
+		  				ac <=> bc
+		  			end
+		  		}
+	  		%>
+	  		<% stors.reverse! if @sortorder == 'desc' %>
+  	    <% stors.each_with_index do |story,index| %>
+          <tr class="partedit pe<%= index & 1 %> <% if @keepopen == story.id.to_s %>open<% end %>" id="partedit<%= story.id %>">
+            <td>
+              <%= index %>
+              <%= 'i' if story.has_image? %>
+              <%= 'p' if story.has_pdf? %>
+            </td>
+            <td>
+              <input type="text" class="ordinal" name="<%= ordinize('ordinal',story.id) %>" value="<%= story.ordinal %>"/>
+              <input type="text" class="ordinal" name="<%= ordinize('specificday',story.id) %>" value="<%= story.specificday %>"/>
+            </td>
+            <td><%= story.pdate.gsub(' ', '&nbsp;') %></td>
+            <td><%= story.name.gsub(' ', '&nbsp;') %></td>
+            <td><%= story.auth.gsub(' ', '&nbsp;') %></td>
+            <td><a href="/<%= @series.name %>/list/<%= story.nym %>"><%= story.downloads %></a><%= (' (latest: ' + story.downloaded_at + ')').gsub(' ', '&nbsp;') if story.downloaded_at %></td>
+            <td><%= story.comments.length %><%= (' (last: ' + story.last_comment_date + ')').gsub(' ', '&nbsp;') if story.numcomments > 0 %></td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td rowspan="6" class="ta img">
+              <div>
+                <a href="<%= story.editim %>" target="_NEW"><img id="im<%= story.id %>" width="100"/></a><br/>
+                <a href="<%= story.editbg %>" target="_NEW"><img id="bg<%= story.id %>" width="100"/></a><br/>
+                <a href="<%= story.pdfimage %>" class="smaller" target="_NEW">[image for pdf]</a><br/>
+              </div>
+              <div>Remove: <input type="checkbox" name="<%= ordinize('remove',story.id) %>"/></div>
+              <div>Connected: <input type="checkbox" name="<%= ordinize('connected',story.id) %>"<%= ' checked' if story.connected? %>/></div>
+              <div><input type="submit" value="Save data..."/></div>
+            </td>
+            <td colspan="6">
+              Name:
+              <input type="text" class="name" name="<%= ordinize('name',story.id) %>" value="<%= story.name %>"/>
+              by
+              <input type="text" class="author" name="<%= ordinize('author',story.id) %>" value="<%= story.auth %>"/>
+              (Image: <input type="text" class="author" name="<%= ordinize('yfrog',story.id) %>" value="<%= story.yfrog %>"/>,
+              GB: <input type="text" class="author" name="<%= ordinize('gb',story.id) %>" value="<%= story.gb %>"/>
+              OS: <input type="text" class="author" name="<%= ordinize('os',story.id) %>" value="<%= story.os %>"/>)
+            </td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td colspan="6">Description:</td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td colspan="3">
+              <textarea name="<%= ordinize('desc',story.id) %>"><%= story.description.gsub('&', '&amp;') %></textarea>
+            </td>
+            <td colspan="3" class="descspan">
+              <%=esc story.description %> <b>(<%= story.description.length %> chars)</b>
+            </td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td>Image:</td><td colspan="5" class="light"><input type="file" class="filename" name="<%= ordinize('image',story.id) %>"/><%= fileinput(story.has_image?) %></td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td>Background:</td><td colspan="5" class="light"><input type="file" class="filename" name="<%= ordinize('background',story.id) %>"/><%= fileinput(story.has_background?) %></td>
+          </tr>
+          <tr class="fulledit fe<%= story.id %> <% if @keepopen == story.id.to_s %>open<% end %>">
+            <td>PDF:</td>
+            <td colspan="5" class="light">
+              <input type="file" class="filename" name="<%= ordinize('pdf',story.id) %>"/><a href="<%= story.editpdf %>" target="_NEW"><%= fileinput(story.has_pdf?) %></a>
+            </td>
+          </tr>
+    	  <% end %>
+			</table>
+
+		<hr/>
+    <table>
+      <tr>
+        <td rowspan="6" class="ta img">NEW</td>
+        <td>Name:</td><td><input type="text" class="name" name="<%= ordinize('name') %>" value=""/></td>
+        <td>by</td>
+        <td><input type="text" class="author" name="<%= ordinize('author') %>" value=""/></td>
+      </tr>
+  		<tr>
+  		  <td class="ta">Description:</td><td colspan="3"><textarea name="<%= ordinize('desc') %>"></textarea></td>
+  		</tr>
+  		<tr>
+  		  <td>Image:</td><td colspan="3"><input type="file" class="filename" name="<%= ordinize('image') %>"/></td>
+  		</tr>
+  		<tr>
+  		  <td>Background:</td><td><input type="file" class="filename" name="<%= ordinize('background') %>"/></td>
+  		</tr>
+  		<tr>
+  		  <td>PDF:</td><td><input type="file" class="filename" name="<%= ordinize('pdf') %>"/></td>
+  		</tr>
+  		<tr>
+  		  <td>Ordinal:</td><td colspan="2"><input type="text" class="ordinal" name="<%= ordinize('ordinal') %>" value="<%= @stories.size > 1 ? @stories.last.ordinal + 1 : 0 %>"/> <input type="text" class="ordinal" name="<%= ordinize('specificday') %>" value="0"/></td>
+  		</tr>
+		</table>
+
+    <% end %>
+
+    <div class="passphrase">Passphrase: <input type="password" class="passphrase" name="passphrase" value="<%= @passphrase %>" /></div>
+    <input type="submit"/>
+  	</form>
+
+  </body>
+</html>

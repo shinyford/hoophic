@@ -1,0 +1,66 @@
+span {
+	width: 100px;
+	text-align: right;
+}
+
+.fulledit {
+	display: none;
+}
+
+.partedit {
+	height: 20px;
+}
+
+.partedit td {
+	color: black;
+	font-size: 16px;
+}
+
+.pe0 {
+	background-color: #CCC;
+}
+
+.pe1 {
+	background-color: #EEE;
+}
+
+.open {
+    display: table-row;
+}
+
+.partedit.open td {
+    color: red;
+}
+
+.img {
+    width: 100px;
+}
+
+.ordinal {
+	width: 30px;
+}
+
+.name {
+	width: 200px;
+}
+
+textarea {
+	width: 100%;
+}
+
+.ta {
+	vertical-align: top;
+}
+
+input {
+	vertical-align: middle;
+}
+
+.descspan {
+    font-weight: normal;
+    color: black;
+    background-color: #eee ;
+    width: 100%;
+}
+
+

@@ -1,0 +1,13 @@
+
+@font-face {
+	font-family: BigFinish;
+	src: url(fonts/BigFinish.eot);
+}
+
+td, .passphrase {
+  font-family: BigFinish,Calibri,Verdana,san-serif;
+  font-weight: bold;
+  font-size: 12px;
+  color: red;
+  vertical-align: middle;
+}

@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <title><%= @series.title %> | <%= @story.name %> | <%= @story.pdf_path %></title>
+    <link rel="stylesheet" href="/style/common.css" type="text/css" />
+	</head>
+	<body>
+		<% @story.accesses.sort.each do |access| %>
+			<p>On <%= access.creation.strftime(TIMEFORMAT) %> from <%= access.alien ? access.referrer : 'YOU!!!' %></p>
+		<% end %>
+	</body>
+</html>
